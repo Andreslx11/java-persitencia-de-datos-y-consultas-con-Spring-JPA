@@ -19,18 +19,17 @@ public class Principal {
     private ConvierteDatos conversor = new ConvierteDatos();
     private List<DatosSerie> datosSeries = new ArrayList<>();
     private   String API_KEY;
+    // se crea para poder hacer uso instarciar por decirlo
+    // al atributo private SerieRepository repository
+    // que se creo para que spring boot haga la inyección dependencias
+    // para interface SerieRepository
+    private  SerieRepository repositorio;
 
     // para traer la api key de la variable de entorno
     public String API_KEY() {
         this.API_KEY= System.getenv("API_KEY_OMDB");
         return API_KEY;
     }
-
-    // se crea para poder hacer uso instarciar por decirlo
-    // al atributo private SerieRepository repository
-    // que se creo para que spring boot haga la inyección dependencias
-    // para interface SerieRepository
-    private  SerieRepository repositorio;
 
     // constructor para lo de inyección de dependencias de SerieRepository
     public Principal(SerieRepository repository) {
@@ -102,7 +101,7 @@ public class Principal {
         // para guardar los datos en la base de datos se instacia el objeto
         Serie serie = new Serie(datos);  // se pasan los datos de la busqueda de la API
         repositorio.save(serie); // Guardar ese serie que acavamos de guardar  en el formato de nuestra de serie
-                                // estos metodod como findAll() se encuentran en la docmunetación de spring Data jpa
+        // estos metodod como findAll() se encuentran en la docmunetación de spring Data jpa
         System.out.println(datos);
     }
 
@@ -131,4 +130,3 @@ public class Principal {
     }
 
 }
-
