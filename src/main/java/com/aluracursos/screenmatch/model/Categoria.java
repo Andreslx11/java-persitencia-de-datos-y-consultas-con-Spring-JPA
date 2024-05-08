@@ -1,22 +1,34 @@
 package com.aluracursos.screenmatch.model;
 
 public enum Categoria {
+     /*
+     serian nuestra constantes, entre parentesis esta
+     como estan en json de APi.
+     AL principio da error por eso se creo el atributo  categoriaOmdb
+     y el construtor
+     */
 
-    // serian nuestra constantes, entre parentesis esta
-    // como estan en json de APi.
-    //AL principio da error por eso se creo el atributo  categoriaOmdb
-    // y el construtor
-    ACCION("Action"),
-    ROMANCE("Romance"),
-    COMEDIA("Comedy"),
-    DRAMA("Drama"),
-    CRIMEN("Crime");
+    /* Modulo 4.3.5  para el genero que desea buscar el usuario debemos hacer ese mapeo es
+    * conversión porque en el Enum tenemos ejemplo ACCION pero ahi no tiene accento tilde como puede
+    * que el usuario escriba diferente entonces debemos de mapaer esa posbilidades, por eso a ACCION en el
+    * campo se le añadio "Acción" */
+
+
+    ACCION("Action", "Acción"),
+    ROMANCE("Romance", "Romance"),
+    COMEDIA("Comedy", "Comedia"),
+    DRAMA("Drama", "Drama"),
+    CRIMEN("Crime", "Crimen");
 
 
     private String categoriaOmdb;
+    /* Modulo 4.3.5*/
+    private String categoriaEspanol;
 
-    Categoria(String categoriaOmdb) {
+    /*Modulo 4.3.6  se añade el  getCategoriaEspañol  */
+    Categoria(String categoriaOmdb, String categoriaEspanol) {
         this.categoriaOmdb = categoriaOmdb;
+        this.categoriaEspanol= categoriaEspanol;
     }
 
 
@@ -47,6 +59,25 @@ public enum Categoria {
             // Compara el valor de categoriaOmdb de cada categoría con el texto proporcionado,
             // sin importar si está en mayúsculas o minúsculas
             if (categoria.categoriaOmdb.equalsIgnoreCase(text)) {
+                return categoria;
+            }
+        }
+        // Si no se encontró ninguna categoría que coincida, lanza una excepción
+        throw new IllegalArgumentException("Ninguna categoria encontrada: " + text);
+    }
+
+    /* Modulo 4.3.7 ==> principal 4.3.8 buscarSeriePorCategoria()/
+    * Entonces, cuando estamos comparando aquí categoriaEspanol, si el usuario no pasa acción,
+    * por ejemplo, con acento, él va a igualar. Ok, acción es exactamente igual a lo que yo
+    * tengo aquí dentro de categoriaEspanol, así que lo encontré. Ah, escribió otra cosa diferente,
+    *  acción, no solo sin el acento, pero escribió dos veces con O. Ahí me va a decir, ok, no tengo
+    * ninguna categoría encontrada
+    *  */
+    public static Categoria fromEspanol(String text) {
+        for (Categoria categoria : Categoria.values()) {
+            // Compara el valor de categoriaEspañol de cada categoría con el texto proporcionado,
+            // sin importar si está en mayúsculas o minúsculas
+            if (categoria.categoriaEspanol.equalsIgnoreCase(text)) {
                 return categoria;
             }
         }

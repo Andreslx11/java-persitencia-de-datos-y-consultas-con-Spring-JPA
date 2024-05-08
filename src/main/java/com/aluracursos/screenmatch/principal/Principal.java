@@ -1,10 +1,7 @@
 package com.aluracursos.screenmatch.principal;
 
 
-import com.aluracursos.screenmatch.model.DatosSerie;
-import com.aluracursos.screenmatch.model.DatosTemporadas;
-import com.aluracursos.screenmatch.model.Episodio;
-import com.aluracursos.screenmatch.model.Serie;
+import com.aluracursos.screenmatch.model.*;
 import com.aluracursos.screenmatch.repository.SerieRepository;
 import com.aluracursos.screenmatch.service.ConsumoAPI;
 import com.aluracursos.screenmatch.service.ConvierteDatos;
@@ -29,6 +26,7 @@ public class Principal {
     private SerieRepository repositorio;
     // modulo 3.2 se crea como varible global para poder usar también  buscarEpisodioPorSerie(), originalmente era de buscarSerieWeb()
     List<Serie> series;
+    Optional<Serie> serieBuscada;
 
 
 
@@ -46,11 +44,22 @@ public class Principal {
     public void muestraElMenu() {
         var opcion = -1;
         while (opcion != 0) {
+            /* Modulo 4.1.1 agragar la opción 4*/
+            /* Modulo 4.2.2 agragar la opción 5*/
+            /* Modulo 4.3.2 agragar la opción 6*/
+            /* Modulo 5.1 agragar la opción 7*/
+            /* Modulo 5.2.3  agragar la opción 8*/
+            /* Modulo 5.3.2  agragar la opción 8*/
             var menu = """
                     1 - Buscar series 
                     2 - Buscar episodios
                     3 - Mostrar series buscadas
-                                  
+                    4 - buscar series por titulo   
+                    5 - top 5 mejores series  
+                    6 - buscar serie por categoria     
+                    7 - filtrar series por temporadas y evaluación
+                    8 - Buscar episodios por titulo
+                    9 - Top 5 episodios por Serie      
                     0 - Salir
                     """;
             System.out.println(menu);
@@ -66,6 +75,21 @@ public class Principal {
                     break;
                 case 3:
                     mostrarSeriesBuscadas();
+                case 4:
+                    buscarSeriesPorTitulo();
+                    break;
+                case 5:
+                     buscarTop5Series();
+                     break;
+                case 6:
+                    buscarSeriePorCategoria();
+                    break;
+                case 7:
+                    filtrarSeriesPorTemporadaYEvaluacion();
+                case 8:
+                    buscarEpisodiosPorTitulo();
+                case 9:
+                    buscarTop5Episodios();
                     break;
                 case 0:
                     System.out.println("Cerrando la aplicación...");
@@ -76,6 +100,8 @@ public class Principal {
         }
 
     }
+
+
 
     private DatosSerie getDatosSerie() {
         System.out.println("Escribe el nombre de la serie que deseas buscar");
@@ -94,7 +120,7 @@ public class Principal {
         /* modulo 3.2 mostrar series buscadas las que estan almacendas en la base de datos */
         mostrarSeriesBuscadas();
         System.out.println("Escribe el nombre de la serie de la cual quieres ver los episodios");
-        var nombreSerie = teclado.next();
+        var nombreSerie = teclado.nextLine();
 
 
         Optional<Serie> serie = series.stream()
@@ -169,12 +195,124 @@ public class Principal {
         // modulo 3.2 se comenta esta lista para volverla una varible global para usar esta lista en buscarEpisodioPorSerie()
         // mas arriba para no crear otra lista duplicando datos, para eso se declara al principio de las varibles globales
 //        List<Serie> series = repositorio.findAll();  // estos metodos como findAll() se encuentran en la docmunetación de spring Data jpa
-          series = repositorio.findAll();
+        series = repositorio.findAll();
 
         // ordenar las series por genero
         series.stream()
                 .sorted(Comparator.comparing(Serie::getGenero))
                 .forEach(System.out::println);
+
+    }
+
+
+        /*Modulo 4.1.3 crear metodo*/
+        private void buscarSeriesPorTitulo(){
+            System.out.println("Escribe el nombre de la serie de que desea buscar ");
+            var nombreSerie = teclado.nextLine();
+
+            /*Modulo 4.1.5 crear una lista para almacemar esas series series*/
+            /* Modulo 5.3.4 se comenta es lista porque se paso a una varible global
+            se coloco la intanciación de la variable en principio, para poder usarla en
+            el metodo  buscarTop5Episodios()
+             */
+            serieBuscada = repositorio.findByTituloContainsIgnoreCase(nombreSerie);
+
+           /* el tratamiento normal para los datos cuando se usa optional*/
+           if(serieBuscada.isPresent()){
+                System.out.println("La serie buscada es : "  + serieBuscada.get());
+           }else {
+                 System.out.println("Serie no encontrada ");
+        }
+
+        }
+
+
+        private void buscarTop5Series(){
+            List<Serie> topSeries = repositorio.findTop5ByOrderByEvaluacionDesc();
+            topSeries.forEach(s ->
+                    System.out.println("Series: " + s.getTitulo() +  "  Evaluación : " + s.getEvaluacion()));
+        }
+
+        /*Modulo 4.4.3  */
+     private void buscarSeriePorCategoria(){
+         System.out.println("Escriba el genero/categoría de la serie que desea buscar");
+         var genero = teclado.nextLine();
+         /*Modulo 4.3.8
+         * va retonarla categoria correcta luego se pasa como argumento en el campo de
+         * findByGenero(categoria)  para traer desde la base datos, recorda ese Genero
+         *  finByGenero  es  como tenemos mapeado categoria en nuestra clase Serie
+         * */
+         var categoria = Categoria.fromEspanol(genero);
+         List<Serie> seriesPorCategoria = repositorio.findByGenero(categoria);
+         System.out.println("Las series de la categoría " + genero);
+         seriesPorCategoria.forEach(System.out::println);
+
+     }
+
+    public void filtrarSeriesPorTemporadaYEvaluacion(){
+        System.out.println("¿Filtrar séries con cuántas temporadas? ");
+        var totalTemporadas = teclado.nextInt();
+        teclado.nextLine();
+        System.out.println("¿Com evaluación apartir de cuál valor? ");
+        var evaluacion = teclado.nextDouble();
+        teclado.nextLine();
+        /*Modulo 5.1 ==> interface SerieRepositorio 5.1.2/  se comento para hacerlo mejor con una query native desde
+        el codigo con   @Query*/
+        //List<Serie> filtroSeries = repositorio.findByTotalTemporadasLessThanEqualAndEvaluacionGreaterThanEqual(totalTemporadas,evaluacion);
+        //Modulo 5.1. se implementa el metodo para consulta nativa
+        List<Serie> filtroSeries = repositorio.seriesPorTemparadaYEvaluacion(totalTemporadas,evaluacion);
+        System.out.println("*** Series filtradas ***");
+        filtroSeries.forEach(s ->
+                System.out.println(s.getTitulo() + "  - evaluacion: " + s.getEvaluacion()));
+    }
+
+
+//    private void  buscarEpisodiosPorTitulo(){
+//        System.out.println("Escribe el nombre del episodio que deseas buscar");
+//        var nombreEpisodio = teclado.nextLine();
+//        /* Modulo 5.2.4  crear una lista para que nos retorne eso datos del repositorio*/
+//        List<Episodio> episodiosEncontrados = repositorio.episodiosPorNombre(nombreEpisodio);
+//        /* printf */
+//        episodiosEncontrados.forEach(e ->
+//                System.out.printf("Serie: %s Temporada %s Episodio %s Evaluación %s\n",
+//                        e.getSerie().getTitulo(), e.getTemporada(), e.getNumeroEpisodio(), e.getEvaluacion()));
+//
+//    }
+//
+//    /* Modulo 5.2.5  agragar la opción 8*/
+//    private void buscarTop5Episodios(){
+//        buscarSeriesPorTitulo();
+//        /* como  buscarSeriesPorTitulo() retorna una lista de la clase optional se
+//        * deben tratar los datos por eso if*/
+//        if(serieBuscada.isPresent()){
+//            Serie serie = serieBuscada.get();
+//            List<Episodio> topEpisodios = repositorio.top5Episodios(serie);
+//            topEpisodios.forEach(e ->
+//                    System.out.printf("Serie: %s - Temporada %s - Episodio %s - Evaluación %s\n",
+//                            e.getSerie().getTitulo(), e.getTemporada(), e.getTitulo(), e.getEvaluacion()));
+//
+//        }
+//    }
+private void  buscarEpisodiosPorTitulo(){
+    System.out.println("Escribe el nombre del episodio que deseas buscar");
+    var nombreEpisodio = teclado.nextLine();
+    List<Episodio> episodiosEncontrados = repositorio.episodiosPorNombre(nombreEpisodio);
+    episodiosEncontrados.forEach(e ->
+            System.out.printf("Serie: %s Temporada %s Episodio %s Evaluación %s\n",
+                    e.getSerie().getTitulo(), e.getTemporada(), e.getNumeroEpisodio(), e.getEvaluacion()));
+
+}
+
+    private void buscarTop5Episodios(){
+        buscarSeriesPorTitulo();
+        if(serieBuscada.isPresent()){
+            Serie serie = serieBuscada.get();
+            List<Episodio> topEpisodios = repositorio.top5Episodios(serie);
+            topEpisodios.forEach(e ->
+                    System.out.printf(" Serie:  %s - Temporada %s -  Episodio  %s -  Evaluación %s \n",
+                            e.getSerie().getTitulo(), e.getTemporada(), e.getTitulo(), e.getEvaluacion()));
+
+        }
     }
 
 }
